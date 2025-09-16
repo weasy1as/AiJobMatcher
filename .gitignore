@@ -1,4 +1,6 @@
+# ===========================
 # Logs
+# ===========================
 logs
 *.log
 npm-debug.log*
@@ -7,7 +9,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# ===========================
 # Node / React
+# ===========================
 node_modules
 dist
 dist-ssr
@@ -15,8 +19,11 @@ dist-ssr
 /frontend/node_modules/
 frontend/dist/
 frontend/.env
+frontend/.env.local
 
+# ===========================
 # Editor directories and files
+# ===========================
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -27,14 +34,37 @@ frontend/.env
 *.sln
 *.sw?
 
-# Backend build
+# ===========================
+# Backend build (Spring Boot / Java)
+# ===========================
 /backend/target/
 /backend/out/
 /backend/*.iml
+.mvn/wrapper/maven-wrapper.jar
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
+# IDE / STS / NetBeans caches
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+# ===========================
 # Sensitive configs
+# ===========================
 /backend/src/main/resources/application.properties
 /backend/src/main/resources/application-*.properties
 
+# ===========================
 # Docker
+# ===========================
 docker-compose.override.yml
