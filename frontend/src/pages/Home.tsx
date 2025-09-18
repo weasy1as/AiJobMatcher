@@ -1,18 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
+import MatchResult from "../components/MatchResult";
 import { supabase } from "../helper/supabaseClient";
 
 export default function Home() {
   const navigate = useNavigate();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
-  // const [resumeText, setResumeText] = useState(""); // For future extraction
-  // const [jobId, setJobId] = useState(null); // For future DB save
+  const [matchResult, setMatchResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
+      console.log(data.session.user.id);
       if (data.session === null) {
         navigate("/login");
       }
@@ -30,6 +33,37 @@ export default function Home() {
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setJobDescription(e.target.value);
+  };
+
+  const handleMatch = async () => {
+    if (!resumeFile) return;
+    setLoading(true);
+    setError("");
+    setMatchResult(null);
+    const { data } = await supabase.auth.getSession();
+    const formData = new FormData();
+    formData.append("resume", resumeFile);
+    formData.append("jobTitle", "Backend Developer"); // could add an input later
+    formData.append("jobDescription", jobDescription);
+    formData.append("userId", data.session.user.id);
+
+    try {
+      const response = await fetch("http://localhost:8080/api/ai/match", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const result = await response.json();
+      setMatchResult(result);
+    } catch (err) {
+      setError("Something went wrong! Check console.");
+      setMatchResult(null);
+      console.error("Error calling backend:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -75,10 +109,25 @@ export default function Home() {
             <button
               type="button"
               className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition text-lg shadow disabled:opacity-60"
-              disabled={!resumeFile || !jobDescription}
+              disabled={!resumeFile || !jobDescription || loading}
+              onClick={handleMatch}
             >
-              Match
+              {loading ? "Matching..." : "Match"}
             </button>
+            {error && (
+              <div className="text-red-600 text-center font-semibold mt-2">
+                {error}
+              </div>
+            )}
+            {matchResult && (
+              <MatchResult
+                score={matchResult.score}
+                highlights={matchResult.highlights || []}
+                missingKeywords={matchResult.missingKeywords || []}
+                suggestions={matchResult.suggestions || []}
+                insights={matchResult.insights}
+              />
+            )}
           </form>
         </div>
       </main>
